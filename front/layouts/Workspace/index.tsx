@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import React, { FC, VFC, useCallback, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import {
   AddButton,
   Channels,
@@ -23,7 +23,7 @@ import Channel from '@pages/Channel';
 import DirectMessage from '@pages/DirectMessage';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IUser } from '@typings/db';
+import { IChannel, IUser } from '@typings/db';
 import { Button, Input, Label } from '@pages/SignUp/styles';
 import useInput from '@hooks/useinput';
 import Modal from '@components/Modal';
@@ -37,6 +37,22 @@ const Workspace: VFC = () => {
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const { workspace } = useParams<{ workspace: string }>();
+
+  // ### GET /workspaces/:workspace/channels
+  // - :workspace 내부의 내가 속해있는 채널 리스트를 가져옴
+  // - return: IChannel[]
+  const { data: channelData } = useQuery<IChannel[]>(['channels'], () =>
+    axios
+      .get(`http://localhost:3095/api/workspaces/${workspace}/channels`, { withCredentials: true })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.dir(err);
+        toast.error(err.response?.data, {
+          position: 'bottom-center',
+        });
+      }),
+  );
 
   const {
     data: userData,
@@ -110,13 +126,12 @@ const Workspace: VFC = () => {
 
   const toggleWorkspaceModal = useCallback((e) => {
     e.stopPropagation();
-
-    console.log('nika 클릭!!!!!!!!!!!!!!!');
     setShowWorkspaceModal((prev) => !prev);
   }, []);
 
   const onClickAddChannel = useCallback(() => {
-    setShowCreateWorkspaceModal(true);
+    setShowCreateChannelModal(true);
+    setShowWorkspaceModal(false);
   }, []);
 
   if (!userData) {
@@ -129,18 +144,16 @@ const Workspace: VFC = () => {
         <RightMenu>
           <span onClick={onClickUserProfile}>
             <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} />
-            {showUserMenu && (
-              <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
-                <ProfileModal>
-                  <img src={gravatar.url(userData.email, { s: '36px', d: 'retro' })} alt=""></img>
-                  <div>
-                    <span id="profile-name">{userData.nickname}</span>
-                    <span id="profile-active">Active</span>
-                  </div>
-                </ProfileModal>
-                <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
-              </Menu>
-            )}
+            <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
+              <ProfileModal>
+                <img src={gravatar.url(userData.email, { s: '36px', d: 'retro' })} alt=""></img>
+                <div>
+                  <span id="profile-name">{userData.nickname}</span>
+                  <span id="profile-active">Active</span>
+                </div>
+              </ProfileModal>
+              <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
+            </Menu>
           </span>
         </RightMenu>
       </Header>
@@ -159,28 +172,29 @@ const Workspace: VFC = () => {
         <Channels>
           <WorkspaceName onClick={toggleWorkspaceModal}>Nika</WorkspaceName>
           <MenuScroll>
-            {showWorkspaceModal && (
-              <Menu
-                show={showWorkspaceModal}
-                onCloseModal={toggleWorkspaceModal}
-                style={{
-                  top: 95,
-                  left: 80,
-                }}
-              >
-                <WorkspaceModal>
-                  <h2>Sleact</h2>
-                  <button onClick={onClickAddChannel}>채널 만들기</button>
-                  <button onClick={onLogout}>로그아웃</button>
-                </WorkspaceModal>
-              </Menu>
-            )}
+            <Menu
+              show={showWorkspaceModal}
+              onCloseModal={toggleWorkspaceModal}
+              style={{
+                top: 95,
+                left: 80,
+              }}
+            >
+              <WorkspaceModal>
+                <h2>Sleact</h2>
+                <button onClick={onClickAddChannel}>채널 만들기</button>
+                <button onClick={onLogout}>로그아웃</button>
+              </WorkspaceModal>
+            </Menu>
+            {channelData?.map((item) => {
+              return <div key={item.name}>{item.name}</div>;
+            })}
           </MenuScroll>
         </Channels>
         <Chats>
           <Routes>
-            <Route path="/channel" element={<Channel />} />
-            <Route path="/dm" element={<DirectMessage />} />
+            <Route path="/channel/:channel" element={<Channel />} />
+            <Route path="/dm/:id" element={<DirectMessage />} />
           </Routes>
         </Chats>
       </WorkspaceWrapper>
@@ -197,7 +211,11 @@ const Workspace: VFC = () => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
-      <CreateChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal}></CreateChannelModal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      />
     </div>
   );
 };

@@ -43,7 +43,7 @@ const LogIn = () => {
   }
 
   if (data) {
-    return <Navigate to="/workspace/channel"></Navigate>;
+    return <Navigate to="/workspace/sleact/channel/일반"></Navigate>;
   }
   // if (!error && userData) {
   //   console.log('로그인됨', userData);
