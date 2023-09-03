@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "autosize": "^6.0.1",
     "react-toastify": "^9.1.3"
+  },
+  "devDependencies": {
+    "@types/autosize": "^4.0.1"
   }
 }

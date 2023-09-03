@@ -57,6 +57,10 @@ const InviteChannelModal: FC<Props> = ({ show, onCloseModal, setShowInviteChanne
     [channel, newMember, userRefetch, setNewMember, setShowInviteChannelModal, workspace],
   );
 
+  if (!show) {
+    return null;
+  }
+
   return (
     <Modal show={show} onCloseModal={onCloseModal}>
       <form onSubmit={onInviteMember}>

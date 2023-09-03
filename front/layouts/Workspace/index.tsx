@@ -32,11 +32,12 @@ import CreateChannelModal from '@components/CreateChannelModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 
 const Workspace: VFC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
-  const [showInviteWorkspaceModal, setShowInvteWorkspaceModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
@@ -134,8 +135,8 @@ const Workspace: VFC = () => {
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
-    setShowInvteWorkspaceModal(false);
-    setShowInvteWorkspaceModal(false);
+    setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   const toggleWorkspaceModal = useCallback((e) => {
@@ -148,7 +149,10 @@ const Workspace: VFC = () => {
     setShowWorkspaceModal(false);
   }, []);
 
-  const onClickInviteWorkspace = useCallback(() => {}, []);
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteChannelModal((prev) => !prev);
+    setShowWorkspaceModal(false);
+  }, []);
 
   if (!userData) {
     return <Navigate to="/login" />;
@@ -178,7 +182,7 @@ const Workspace: VFC = () => {
         <Workspaces>
           {userData.Workspaces.map((item) => {
             return (
-              <Link key={item.id} to={`/workspace/${123}/channel/일반`}>
+              <Link key={item.id} to={`/workspace/${workspace}/channel/일반`}>
                 <WorkspaceButton>{item.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -203,7 +207,7 @@ const Workspace: VFC = () => {
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
-            {/* <ChannelList userData={userData} /> */}
+            <ChannelList />
             <DMList />
             {/* {channelData?.map((item) => {
               return <div key={item.name}>{item.name}</div>;
@@ -238,7 +242,7 @@ const Workspace: VFC = () => {
       <InviteWorkspaceModal
         show={showInviteWorkspaceModal}
         onCloseModal={onCloseModal}
-        setShowInviteWorkspaceModal={setShowInvteWorkspaceModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
       />
       <InviteChannelModal
         show={showInviteChannelModal}

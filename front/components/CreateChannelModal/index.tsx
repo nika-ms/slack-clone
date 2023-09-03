@@ -14,6 +14,11 @@ interface Props {
   setShowCreateChannelModal: (flag: boolean) => void;
 }
 
+// ### POST /workspaces/:workspace/channels
+// - :workspace 내부에 채널을 생성함
+// - body: { name: string(이름) }
+// - return: IChannel
+
 const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
   const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
