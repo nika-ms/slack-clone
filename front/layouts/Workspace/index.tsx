@@ -29,10 +29,15 @@ import useInput from '@hooks/useinput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import CreateChannelModal from '@components/CreateChannelModal';
+import InviteChannelModal from '@components/InviteChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
+import DMList from '@components/DMList';
 
 const Workspace: VFC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInvteWorkspaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
@@ -62,6 +67,13 @@ const Workspace: VFC = () => {
   } = useQuery<IUser | false>(['user'], () =>
     axios.get('http://localhost:3095/api/users', { withCredentials: true }).then((res) => res.data),
   );
+
+  const { data: memberData } = useQuery<IUser[]>(['member'], () => {
+    return axios
+      .get(`http://localhost:3095/api/workspaces/${workspace}/members`)
+      .then((res) => res.data)
+      .catch((err) => console.log(err));
+  });
 
   const onLogout = useCallback(() => {
     axios
@@ -99,7 +111,7 @@ const Workspace: VFC = () => {
       }
 
       axios
-        .post('http://localhost:3095/api/workspaces111', {
+        .post('http://localhost:3095/api/workspaces', {
           workspace: newWorkspace,
           url: newUrl,
         })
@@ -122,6 +134,8 @@ const Workspace: VFC = () => {
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
+    setShowInvteWorkspaceModal(false);
+    setShowInvteWorkspaceModal(false);
   }, []);
 
   const toggleWorkspaceModal = useCallback((e) => {
@@ -133,6 +147,8 @@ const Workspace: VFC = () => {
     setShowCreateChannelModal(true);
     setShowWorkspaceModal(false);
   }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {}, []);
 
   if (!userData) {
     return <Navigate to="/login" />;
@@ -182,13 +198,16 @@ const Workspace: VFC = () => {
             >
               <WorkspaceModal>
                 <h2>Sleact</h2>
+                <button onClick={onClickInviteWorkspace}>워크스페이스에 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널 만들기</button>
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((item) => {
+            {/* <ChannelList userData={userData} /> */}
+            <DMList />
+            {/* {channelData?.map((item) => {
               return <div key={item.name}>{item.name}</div>;
-            })}
+            })} */}
           </MenuScroll>
         </Channels>
         <Chats>
@@ -215,6 +234,16 @@ const Workspace: VFC = () => {
         show={showCreateChannelModal}
         onCloseModal={onCloseModal}
         setShowCreateChannelModal={setShowCreateChannelModal}
+      />
+      <InviteWorkspaceModal
+        show={showInviteWorkspaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInvteWorkspaceModal}
+      />
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
       />
     </div>
   );
